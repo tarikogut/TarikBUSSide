@@ -4,6 +4,8 @@ import time
 import struct
 import os
 import sys
+from turtle import fd
+
 import serial
 import binascii
 import select
@@ -18,8 +20,10 @@ sequence_number = 5
 oldterm = 0
 oldflags = 0
 
+
 def keys_isData():
     return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+
 
 def keys_init():
     global oldterm
@@ -35,11 +39,13 @@ def keys_init():
     oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
     fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
+
 def keys_getchar():
     if keys_isData():
         return sys.stdin.read(1)
     else:
         return None
+
 
 def keys_cleanup():
     global oldterm
@@ -48,27 +54,32 @@ def keys_cleanup():
     termios.tcsetattr(fd, termios.TCSAFLUSH, oldterm)
     fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
+
 def set_sequence_number(seq):
     global sequence_number
 
     sequence_number = seq
+
 
 def get_sequence_number():
     global sequence_number
 
     return sequence_number
 
+
 def next_sequence_number():
     global sequence_number
 
-    sequence_number = (sequence_number + 1 ) % (1 << 30)
+    sequence_number = (sequence_number + 1) % (1 << 30)
     with open("/tmp/BUSSide.seq", "wb") as f:
         f.write(struct.pack('<I', sequence_number))
+
 
 def FlushInput():
     global myserial
 
     myserial.flushInput()
+
 
 def Sync():
     global myserial
@@ -78,6 +89,7 @@ def Sync():
     if len(ch1) != 1 or len(ch2) != 1:
         return False
     return ord(ch1) == 0xfe and ord(ch2) == 0xca
+
 
 def requestreply(command, request_args, nretries=10):
     global myserial
@@ -108,7 +120,7 @@ def requestreply(command, request_args, nretries=10):
             bs_request_args += struct.pack('<I', request_args[i])
 
         # calculate crc
-        request  = bs_command
+        request = bs_command
         request += bs_command_length
         saved_sequence_number = get_sequence_number()
         next_sequence_number()
@@ -116,9 +128,9 @@ def requestreply(command, request_args, nretries=10):
         request += struct.pack('<I', 0x00000000)
         request += bs_request_args
         crc = binascii.crc32(request)
-        
+
         # build frame
-        request  = bs_command
+        request = bs_command
         request += bs_command_length
         request += struct.pack('<I', saved_sequence_number)
         request += struct.pack('<i', crc)
@@ -148,7 +160,7 @@ def requestreply(command, request_args, nretries=10):
         if len(d) != 4:
             continue
         bs_checksum, = struct.unpack('<i', d)
-     
+
         # read reply payload
         reply_args = ""
         if reply_length == 0:
@@ -167,7 +179,7 @@ def requestreply(command, request_args, nretries=10):
                 continue
 
         # calculate checksum
-        reply  = bs_command
+        reply = bs_command
         reply += bs_reply_length
         reply += bs_sequence_number
         reply += struct.pack('<I', 0x00000000)
@@ -186,15 +198,18 @@ def requestreply(command, request_args, nretries=10):
     # retries failed
     return None
 
+
 def getSerial():
     global myserial
 
     return myserial
 
+
 def NewTimeout(ltimeout):
     global mydevice
 
     Connect(mydevice, ltimeout, 0)
+
 
 def Connect(device, ltimeout=2, nretries=10):
     global myserial
@@ -227,7 +242,7 @@ def Connect(device, ltimeout=2, nretries=10):
                 (bs_reply_length, bs_reply_args) = rv
                 print("+++ OK")
                 return rv
-            return (1,1)
+            return (1, 1)
         except:
             pass
     return None

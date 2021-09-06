@@ -7,8 +7,9 @@ import sys
 import struct
 import os
 
-BLOCKSIZE=1024
-WRITEBLOCKSIZE=256
+BLOCKSIZE = 1024
+WRITEBLOCKSIZE = 256
+
 
 def dumpSPI(size, skip):
     request_args = [size, skip, 1000000]
@@ -20,6 +21,7 @@ def dumpSPI(size, skip):
     for i in range(bs_reply_length / 4):
         data = data + struct.pack('<I', bs_reply_args[i])
     return data
+
 
 def spi_dump_flash(dumpsize, outfile):
     bs.NewTimeout(5)
@@ -38,9 +40,10 @@ def spi_dump_flash(dumpsize, outfile):
             f.write(data)
             f.flush()
             skip = skip + BLOCKSIZE
-            dumpsize = dumpsize - size 
-	print("+++ SUCCESS\n")
-	return (1, 1)
+            dumpsize = dumpsize - size
+        print("+++ SUCCESS\n")
+        return (1, 1)
+
 
 def spi_read_id():
     print("+++ Sending SPI read ID command")
@@ -56,8 +59,9 @@ def spi_read_id():
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
 
+
 def writeSPI(size, skipsize, data):
-    request_args = list(range(3 + size/4))
+    request_args = list(range(3 + size / 4))
     request_args[0] = size
     request_args[1] = skipsize
     request_args[2] = 1000000
@@ -65,6 +69,7 @@ def writeSPI(size, skipsize, data):
         request_args[3 + i] = data[i]
     rv = bs.requestreply(37, request_args)
     return rv
+
 
 def spi_flash(dumpsize, infile):
     bs.NewTimeout(5)
@@ -78,12 +83,12 @@ def spi_flash(dumpsize, infile):
                 size = WRITEBLOCKSIZE
             f.seek(skip)
             rawdata = f.read(size)
-            data = list(range(size/4))
-            for i in range(size/4):
-                a = ord(rawdata[4*i + 0])
-                b = ord(rawdata[4*i + 1])
-                c = ord(rawdata[4*i + 2])
-                d = ord(rawdata[4*i + 3])
+            data = list(range(size / 4))
+            for i in range(size / 4):
+                a = ord(rawdata[4 * i + 0])
+                b = ord(rawdata[4 * i + 1])
+                c = ord(rawdata[4 * i + 2])
+                d = ord(rawdata[4 * i + 3])
                 data[i] = (d << 24) + (c << 16) + (b << 8) + a
             rv = writeSPI(size, skip, data)
             if rv is None:
@@ -94,6 +99,7 @@ def spi_flash(dumpsize, infile):
         print("+++ SUCCESS\n")
         return (1, 1)
 
+
 def spi_fuzz(cs, clk, mosi, miso):
     print("+++ Sending spi fuzz command")
     request_args = [1000000, cs, clk, mosi, miso]
@@ -103,15 +109,15 @@ def spi_fuzz(cs, clk, mosi, miso):
         return None
     (bs_reply_length, bs_reply_args) = rv
 
-    n = bs_reply_length / (4*6)
+    n = bs_reply_length / (4 * 6)
     print(("+++ FOUND %d SPI commands" % (n)))
     for i in range(n):
-        cmd = bs_reply_args[i*6 + 0]
-        v1 = bs_reply_args[i*6 + 1]
-        v2 = bs_reply_args[i*6 + 2]
-        v3 = bs_reply_args[i*6 + 3]
-        v4 = bs_reply_args[i*6 + 4]
-        v5 = bs_reply_args[i*6 + 5]
+        cmd = bs_reply_args[i * 6 + 0]
+        v1 = bs_reply_args[i * 6 + 1]
+        v2 = bs_reply_args[i * 6 + 2]
+        v3 = bs_reply_args[i * 6 + 3]
+        v4 = bs_reply_args[i * 6 + 4]
+        v5 = bs_reply_args[i * 6 + 5]
         print("+++ SPI command FOUND")
         print(("+++ SPI command %.2x" % (cmd)))
         print(("+++ SPI v1 %.2x" % (v1)))
@@ -132,13 +138,13 @@ def spi_discover_pinout():
         return None
     (bs_reply_length, bs_reply_args) = rv
 
-    n = bs_reply_length / (4*4)
+    n = bs_reply_length / (4 * 4)
     print(("+++ FOUND %d SPI interfaces" % (n)))
     for i in range(n):
-        cs = bs_reply_args[i*4 + 0]
-        clk = bs_reply_args[i*4 + 1]
-        mosi = bs_reply_args[i*4 + 2]
-        miso = bs_reply_args[i*4 + 3]
+        cs = bs_reply_args[i * 4 + 0]
+        clk = bs_reply_args[i * 4 + 1]
+        mosi = bs_reply_args[i * 4 + 2]
+        miso = bs_reply_args[i * 4 + 3]
         print("+++ SPI interface FOUND")
         print(("+++ SPI CS at GPIO %i" % (cs)))
         print(("+++ SPI CLK at GPIO %i" % (clk)))
@@ -146,6 +152,7 @@ def spi_discover_pinout():
         print(("+++ SPI MISO at GPIO %i" % (miso)))
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def spi_streg1(cs, clk, mosi, miso):
     print("+++ Sending SPI command")
@@ -155,9 +162,10 @@ def spi_streg1(cs, clk, mosi, miso):
         return None
     (bs_reply_length, bs_reply_args) = rv
     for i in range(1, 2):
-       print(("+++ STATUS REGISTER 1: %.2x" % (bs_reply_args[i])))
+        print(("+++ STATUS REGISTER 1: %.2x" % (bs_reply_args[i])))
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def spi_streg2(cs, clk, mosi, miso):
     print("+++ Sending SPI command")
@@ -167,9 +175,10 @@ def spi_streg2(cs, clk, mosi, miso):
         return None
     (bs_reply_length, bs_reply_args) = rv
     for i in range(1, 2):
-       print(("+++ STATUS REGISTER 2: %.2x" % (bs_reply_args[i])))
+        print(("+++ STATUS REGISTER 2: %.2x" % (bs_reply_args[i])))
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def spi_readuid(cs, clk, mosi, miso):
     print("+++ Sending SPI command")
@@ -179,9 +188,10 @@ def spi_readuid(cs, clk, mosi, miso):
         return None
     (bs_reply_length, bs_reply_args) = rv
     for i in range(5, 13):
-       print(("+++ UID: %.2x" % (bs_reply_args[i])))
+        print(("+++ UID: %.2x" % (bs_reply_args[i])))
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def doSendCommand(cs, clk, mosi, miso, args):
     print("+++ Sending SPI command")
@@ -200,9 +210,10 @@ def doSendCommand(cs, clk, mosi, miso, args):
         return None
     (bs_reply_length, bs_reply_args) = rv
     for i in range(n):
-       print(("+++ SPI Response: %.2x" % (bs_reply_args[i])))
+        print(("+++ SPI Response: %.2x" % (bs_reply_args[i])))
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def spi_wp_enable(cs, clk, mosi, miso):
     print("+++ Sending SPI write protect commands")
@@ -214,6 +225,7 @@ def spi_wp_enable(cs, clk, mosi, miso):
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
 
+
 def spi_wp_disable(cs, clk, mosi, miso):
     print("+++ Sending SPI write protect commands")
     request_args = [1000000, cs, clk, mosi, miso]
@@ -223,6 +235,7 @@ def spi_wp_disable(cs, clk, mosi, miso):
     (bs_reply_length, bs_reply_args) = rv
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def spi_bb_read_id(cs, clk, mosi, miso):
     print("+++ Sending SPI read ID command")
@@ -238,6 +251,7 @@ def spi_bb_read_id(cs, clk, mosi, miso):
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
 
+
 def spi_erase_sector(skipsize, cs, clk, mosi, miso):
     print("+++ Sending SPI erase sector command")
     request_args = [1000000, skipsize, cs, clk, mosi, miso]
@@ -247,6 +261,7 @@ def spi_erase_sector(skipsize, cs, clk, mosi, miso):
     (bs_reply_length, bs_reply_args) = rv
     print("+++ SUCCESS\n")
     return (bs_reply_length, bs_reply_args)
+
 
 def doFlashCommand(command):
     if command.find("read id") == 0:
@@ -312,6 +327,7 @@ def doFlashCommand(command):
             return None
     else:
         return None
+
 
 def doCommand(command):
     if command.find("flash ") == 0:

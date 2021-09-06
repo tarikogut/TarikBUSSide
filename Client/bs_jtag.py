@@ -7,6 +7,7 @@ import time
 import sys
 import struct
 
+
 def jtag_discover_pinout():
     print("+++ Sending jtag pinout discovery command")
 
@@ -28,8 +29,9 @@ def jtag_discover_pinout():
         print(("+++ TDI %i" % (tdi)))
         print(("+++ TDO %i" % (tdo)))
         print(("+++ NTRST %i" % (ntrst)))
-    print("+++ SUCCESS")
-    return (bs_reply_length, bs_reply_args)
+        print("+++ SUCCESS")
+    return bs_reply_length, bs_reply_args
+
 
 def doCommand(command):
     if command == "discover pinout":

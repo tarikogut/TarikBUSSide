@@ -17,6 +17,7 @@ if len(sys.argv) != 2:
 
 device = sys.argv[1]
 
+
 def printHelp():
     print("+++ The BUSSide accepts the following commands")
     print("+++")
@@ -46,6 +47,7 @@ def printHelp():
     print("+++ > quit")
     print("+++")
 
+
 def doCommand(command):
     if command.find("spi ") == 0:
         return bs_spi.doCommand(command[4:])
@@ -59,6 +61,7 @@ def doCommand(command):
         return -1
     else:
         return None
+
 
 try:
     with open("/tmp/BUSSide.seq", "rb") as f:
